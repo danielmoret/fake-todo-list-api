@@ -59,12 +59,12 @@ def create_user(username=None):
     try:
         data = request.json
     except Exception as error:
-        return jsonify({"message": "Debes enviar un array vacío"}), 500
+        return jsonify({"message": "You must add an empty array in the body of the request"}), 500
 
     if type(data) == list and len(data) == 0:
         user = User.query.filter_by(username=username).first()
         if user is not None:
-            return jsonify({"msg": "Usuario ya existe"}), 400
+            return jsonify({"msg": f"The user {username} already exists"}), 400
         if user is None:
             user = User(username=username)
             db.session.add(user)
@@ -80,7 +80,7 @@ def create_user(username=None):
                 print(error)
                 return jsonify({"msg": error.args})
     else:
-        return jsonify({"message": "Debes enviar un array vacío"}), 500
+        return jsonify({"message": "You must add an empty array in the body of the request"}), 500
 
 
 @app.route('/todos/user/<string:username>', methods=['GET'])
@@ -90,7 +90,7 @@ def get_all_todo(username=None):
 
     user = User.query.filter_by(username=username).one_or_none()
     if user is None:
-        return jsonify({"msg": "Usuario no existe"}), 400
+        return jsonify({"msg": f"The user {username} doesn't exists"}), 400
     if user is not None:
         todos = Todo.query.filter_by(user_id=user.id).all()
         if todos is None:
@@ -103,47 +103,42 @@ def get_all_todo(username=None):
 def update_task(username=None):
     user = User.query.filter_by(username=username).first()
     if user is None:
-        return jsonify({"msg": "user not found"}), 404
+        return jsonify({"msg": f"The user {username} doesn't exists"}), 404
 
-    if user is not None:
-        todos = Todo.query.filter_by(user_id=user.id).all()
-        for todo in todos:
-            db.session.delete(todo)
-        db.session.commit()
+    todos = Todo.query.filter_by(user_id=user.id).all()
+    for todo in todos:
+        db.session.delete(todo)
+    db.session.commit()
 
-        data = request.json
-        if len(data) >= 1:
-            for todo in data:
+    data = request.json
+    if len(data) >= 1:
+        for todo in data:
 
-                todo = Todo(label=todo["label"],
-                            done=todo["done"], user_id=user.id)
-                db.session.add(todo)
-            try:
-                db.session.commit()
-                return jsonify({"msg": f"Se guardaron {len(data)} tareas"}), 201
-            except Exception as error:
-                db.session.rollback()
-                return jsonify({"msg": error.args})
-        else:
-            return jsonify({"msg": "bad request"}), 400
-
+            todo = Todo(label=todo["label"],
+                        done=todo["done"], user_id=user.id)
+            db.session.add(todo)
+        try:
+            db.session.commit()
+            return jsonify({"msg": f"{len(data)} tasks were added successfully"}), 201
+        except Exception as error:
+            db.session.rollback()
+            return jsonify({"msg": error.args})
     else:
-        return jsonify({"msg": "bad request"}), 400
+        return jsonify({"msg": "You must send at least one task"}), 400
 
 
 @app.route('/todos/user/<string:username>', methods=['DELETE'])
 def delete_task(username=None):
     if username is None:
-        return jsonify({"msg": "bad request"}), 400
+        return jsonify({"msg": "You must include a username in the URL of the request"}), 400
 
     user = User.query.filter_by(username=username).first()
     if user is None:
-        return jsonify({"msg": "user not found"}), 404
+        return jsonify({"msg": f"The user {username} doesn't exist"}), 404
 
-    if user is not None:
-        db.session.delete(user)
-        db.session.commit()
-        return jsonify({"msg": "user deleted"}), 200
+    db.session.delete(user)
+    db.session.commit()
+    return jsonify({"msg": f"The user {username} has been deleted successfully"}), 200
 
 
     # this only runs if `$ python src/app.py` is executed

@@ -7,7 +7,7 @@ from flask import Flask, request, jsonify, url_for
 from flask_migrate import Migrate
 from flask_swagger import swagger
 from flask_cors import CORS
-from utils import APIException, generate_sitemap
+from utils import APIException, generate_sitemap, is_valid_task
 from admin import setup_admin
 from models import db, User, Todo
 
@@ -47,10 +47,6 @@ def read_todos():
 @app.errorhandler(APIException)
 def handle_invalid_usage(error):
     return jsonify(error.to_dict()), error.status_code
-
-# generate sitemap with all your endpoints
-def is_valid_task(task):
-    return isinstance(task.get("label"), str) and isinstance(task.get("done"), bool)
 
 @app.route('/')
 def sitemap():

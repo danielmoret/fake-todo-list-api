@@ -39,3 +39,6 @@ def generate_sitemap(app):
         <p>Start working on your proyect by following the <a href="https://start.4geeksacademy.com/starters/flask" target="_blank">Quick Start</a></p>
         <p>Remember to specify a real endpoint path like: </p>
         <ul style="text-align: left;">"""+links_html+"</ul></div>"
+
+def is_valid_task(task):
+    return isinstance(task.get("label"), str) and isinstance(task.get("done"), bool)
